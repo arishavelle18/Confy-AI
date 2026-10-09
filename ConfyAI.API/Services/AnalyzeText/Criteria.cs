@@ -13,36 +13,6 @@ public static class Criteria
     public static readonly IReadOnlyList<Criterion> All =
     [
         new("probationary_period", ["probation"], 
-            //"""
-            //Risk to detect: PROBATIONARY PERIOD TOO LONG
-            //- Flag risky=true ONLY if the clause sets a probationary period LONGER than 6 months (for example 7 months, 9 months, or 1 year).
-            //- If the clause allows an extension, ADD the extension to the base period. Flag risky=true if the total is longer than 6 months.
-            //- Do NOT flag a probationary period of 6 months (about 180 days) or less.
-            //- Do NOT flag a clause that does not state the length of the probationary period.
-            //- Do NOT flag clauses that do not mention probation at all.
-            //- Convert days to months first (30 days = 1 month). 90 days is 3 months, which is NOT risky.
-            //- If the base period plus the extension is exactly 6 months or less, it is NOT risky.
-
-
-            //Examples:
-            //Clause: "The Employee shall serve a probationary period of twelve (12) months from the date of hiring."
-            //Answer: {"risky": true, "category": "probationary_period", "explanation": "The probationary period is 12 months, which is longer than 6 months."}
-
-            //Clause: "The probationary period is four (4) months and may be extended by up to four (4) more months."
-            //Answer: {"risky": true, "category": "probationary_period", "explanation": "The base period is 4 months, but the extension of up to 4 more months makes it 8 months in total, which is longer than 6 months."}
-
-            //Clause: "The Employee shall serve a probationary period of six (6) months."
-            //Answer: {"risky": false, "category": null, "explanation": null}
-
-            //Clause: "The Employee will receive a monthly salary of PHP 25,000."
-            //Answer: {"risky": false, "category": null, "explanation": null}
-
-            //Clause: "The Employee shall be on probation for sixty (60) days."
-            //Answer: {"risky": false, "category": null, "explanation": null}
-
-            //Clause: "The probationary period is two (2) months and may be extended by up to four (4) more months."
-            //Answer: {"risky": false, "category": null, "explanation": null}
-            //"""
             "Handled in code: see ClauseAnalyzer.RunProbationAsync."
             ),
 
@@ -59,6 +29,8 @@ public static class Criteria
 
             Clause: "The Company may terminate this contract without prior notice or cause."
             Answer: {"risky": true, "category": "termination_without_cause", "explanation": "The Company can terminate without notice and without a cause."}
+            Clause: "The Employer may end this contract with or without cause upon sixty (60) days' notice."
+            Answer: {"risky": true, "category": "termination_without_cause", "explanation": "The Employer can end the contract without a cause, even with notice."}
 
             Clause: "Employment may be terminated for serious misconduct after due notice and hearing."
             Answer: {"risky": false, "category": null, "explanation": null}

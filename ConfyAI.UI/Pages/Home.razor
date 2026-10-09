@@ -242,6 +242,10 @@
         {
             error = "Cannot reach Confy's local engine. Make sure the API is running.";
         }
+        catch (TaskCanceledException)
+        {
+            error = "This contract is taking too long. Try a shorter one.";
+        }
         catch (System.Text.Json.JsonException)
         {
             error = "Unexpected reply from the local engine.";

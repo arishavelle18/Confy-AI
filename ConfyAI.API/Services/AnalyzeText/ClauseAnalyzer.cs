@@ -14,6 +14,9 @@ public class ClauseAnalyzer(OllamaApiClient ollamaApiClient) : IClauseAnalyzer
         PropertyNameCaseInsensitive = true
     };
 
+    // A clause that only says "do not solicit" and has none of these is not a non-compete.
+    private static readonly string[] WorkWords =
+        ["work for", "employed by", "engage in", "compet", "provide services", "similar business", "same industry"];
     public async Task<AnalyzeTextResponse> AnalyzeAsync(string clause, CancellationToken cancellationToken)
     {
         var needsReview = false;
@@ -27,19 +30,16 @@ public class ClauseAnalyzer(OllamaApiClient ollamaApiClient) : IClauseAnalyzer
 
             needsReview |= result.NeedsReview;
         }
-
-        return new AnalyzeTextResponse(
-           Risky: false,
-           Category: null,
-           Explanation: null,
-           LegalBasis: null,
-           RawClauseText: clause);
+        return new AnalyzeTextResponse(false, null, null, null, clause, needsReview);
     }
 
     private async Task<AnalyzeTextResponse> RunCriterionAsync(Criterion criterion, string clause, CancellationToken cancellationToken)
     {
         if (criterion.Category == "probationary_period")
             return await RunProbationAsync(clause, cancellationToken);
+        // A non-solicit clause is decided in code, not by the model.
+        if (criterion.Category == "post_employment_restriction" && IsOnlyNonSolicit(clause))
+            return new AnalyzeTextResponse(false, null, null, null, clause);
 
         var generateRequest = new GenerateRequest
         {
@@ -58,11 +58,15 @@ public class ClauseAnalyzer(OllamaApiClient ollamaApiClient) : IClauseAnalyzer
 
         try
         {
-            var result = JsonSerializer.Deserialize<AnalyzeTextResponse>(responseText.ToString(), JsonOptions);
-            return result! with
+            var result = JsonSerializer.Deserialize<AnalyzeTextResponse>(responseText.ToString(), JsonOptions)!;
+            if (!result.Risky)
+                return new AnalyzeTextResponse(false, null, null, null, clause);
+
+            return result with
             {
+                Category = criterion.Category,
                 RawClauseText = clause,
-                LegalBasis = LegalReferences.For(result.Category)
+                LegalBasis = LegalReferences.For(criterion.Category)
             };
         }
         catch
@@ -155,7 +159,12 @@ public class ClauseAnalyzer(OllamaApiClient ollamaApiClient) : IClauseAnalyzer
         }
         catch
         {
-            return new AnalyzeTextResponse(false, null, null, null, clause);
+            return new AnalyzeTextResponse(false, null, null, null, clause,true);
         }
     }
+
+    //True when the clause only forbids soliciting clients or employees.
+    private static bool IsOnlyNonSolicit(string clause) =>
+        clause.Contains("solicit", StringComparison.OrdinalIgnoreCase) &&
+        !WorkWords.Any(w => clause.Contains(w, StringComparison.OrdinalIgnoreCase));
 }
