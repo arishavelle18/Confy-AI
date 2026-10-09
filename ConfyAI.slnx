@@ -1,4 +1,14 @@
 <Solution>
+  <Folder Name="/SampleContract/">
+    <File Path="../sample contract/SampleContract.docx" />
+    <File Path="../sample contract/SampleContract.pdf" />
+    <File Path="../sample contract/Sample_Employment_Contract1.docx" />
+    <File Path="../sample contract/Sample_Employment_Contract1.pdf" />
+    <File Path="../sample contract/Test1_BPO_Contract_PDF.pdf" />
+    <File Path="../sample contract/Test2_Clean_Contract_DOCX.docx" />
+    <File Path="../sample contract/Test3_Section_Format_DOCX.docx" />
+    <File Path="../sample contract/Test4_Long_Contract_PDF.pdf" />
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path="README.md" />
   </Folder>
