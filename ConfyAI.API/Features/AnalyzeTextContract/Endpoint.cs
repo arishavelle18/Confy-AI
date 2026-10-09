@@ -1,7 +1,7 @@
 ﻿using Carter;
 using MediatR;
 
-namespace ConfyAI.API.Features.AnalyzeContract;
+namespace ConfyAI.API.Features.AnalyzeTextContract;
 
 public class Endpoint : ICarterModule
 {

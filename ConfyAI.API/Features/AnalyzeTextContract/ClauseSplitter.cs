@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
 
-namespace ConfyAI.API.Features.AnalyzeContract;
+namespace ConfyAI.API.Features.AnalyzeTextContract;
 
 //public static class ClauseSplitter
 //{

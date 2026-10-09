@@ -3,7 +3,7 @@ using ConfyAI.API.Services.AnalyzeText;
 using FluentValidation;
 using MediatR;
 
-namespace ConfyAI.API.Features.AnalyzeContract;
+namespace ConfyAI.API.Features.AnalyzeTextContract;
 
 public record AnalyzeContractRequest(string Text) : IRequest<AnalyzeContractResponse>;
 public class AnalyzeContractRequestValidator : AbstractValidator<AnalyzeContractRequest>
