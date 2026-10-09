@@ -4,11 +4,9 @@
 
 Confy is a local-first tool for Filipino workers. You paste a contract (or upload a PDF or Word file), and Confy flags clauses that deserve a closer look, explains why in plain English, and points to the Philippine law you can check the clause against.
 
-Built for the **AppBuildersPH Hackathon 2026** (Local AI theme).
+Built for the **AppBuildersPH Hackathon 2026 (Local AI theme)**.
 
-> Confy is **not legal advice**. It flags clauses that *should be checked*. It does not say whether a clause is valid or enforceable. For real decisions, ask a lawyer or the DOLE.
-
----
+> **Confy is not legal advice.** It flags clauses that should be checked. It does not say whether a clause is valid or enforceable. For real decisions, ask a lawyer or the DOLE.
 
 ## At a glance
 
@@ -16,20 +14,18 @@ Built for the **AppBuildersPH Hackathon 2026** (Local AI theme).
 - **Short description:** A local-first contract checker. It reads an employment contract on your own computer and marks clauses worth a second look, with plain-English reasons and Philippine law to check against.
 - **Team members:** Solo build by Arishavelle Karl D. Villanueva ([@arishavelle18](https://github.com/arishavelle18))
 - **Repository:** https://github.com/arishavelle18/Confy-AI
-- **Demo video:** _add link_
-- **X / LinkedIn video post:** _add link_
-
----
+- **Demo video:** https://www.linkedin.com/feed/update/urn:li:ugcPost:7514380462488768512/
+- **X video post:** https://x.com/ArishavelleDev/status/2108617360726958355
+- **LinkedIn video post:** https://www.linkedin.com/feed/update/urn:li:ugcPost:7514380462488768512/
 
 ## Why local
 
 An employment contract holds your name, salary and personal terms. Confy runs on your own computer:
 
-- The language model runs through [Ollama](https://ollama.com) on `localhost`.
-- The API and the web app both run on `localhost`.
-- Your contract is never sent to any server on the internet. There are no cloud AI calls, no analytics and no external fonts or scripts.
-
-You can switch off Wi-Fi and Confy still works (after the one-time setup below).
+- The language model runs through **Ollama on localhost**.
+- The API and the web app both run on **localhost**.
+- Your contract is **never sent to any server on the internet**. There are no cloud AI calls, no analytics and no external fonts or scripts.
+- You can switch off Wi-Fi and Confy still works (after the one-time setup below).
 
 ### Why does this product benefit from running AI locally?
 
@@ -54,6 +50,7 @@ An employment contract is private. It has your salary, your employer's name and 
 | Restriction after you leave | Non-compete or similar limits after employment ends |
 
 Legal references shown in the app (for you to check against):
+
 - Labor Code Art. 296 (formerly 281) on probationary employment, Arts. 297 to 299 (formerly 282 to 284) on termination causes
 - Labor Code Art. 113 on wage deductions
 - Civil Code Art. 1306 and *Rivera v. Solidbank* on reasonableness of post-employment restrictions
@@ -62,12 +59,12 @@ Legal references shown in the app (for you to check against):
 
 Small local models are easy to confuse, so Confy does not ask one model one big question.
 
-1. **Split.** The contract is split into numbered clauses.
+1. **Split.** The contract is split into numbered clauses. Section headings are skipped.
 2. **Route by rules.** Keyword rules decide which of the 4 checks apply to a clause.
 3. **One focused question per check.** The model sees one clause and one narrow criterion at a time, with a few examples.
-4. **Code decides what it can.** For probation, the model only extracts the numbers (length and extension). Plain code converts and compares them to 6 months.
-5. **Verified references.** Legal references are attached by code from a fixed list. The model never writes law citations.
-6. **No silent "safe".** If the model fails or returns something unusable for a clause, Confy marks it **"could not be checked"** instead of calling it safe.
+4. **Code decides what it can.** For probation, the model only extracts the numbers (length and extension). Plain code converts and compares them to 6 months. A clause that only forbids soliciting clients or co-workers is recognized in code as not a non-compete.
+5. **Verified references.** The category and the legal reference are attached by code from a fixed list. The model never writes law citations.
+6. **No silent "safe".** If the model fails or returns something unusable for a clause, Confy marks it "could not be checked" instead of calling it safe.
 
 ## Tech stack
 
@@ -77,11 +74,12 @@ Small local models are easy to confuse, so Confy does not ask one model one big 
 
 ## Run it
 
-**You need:** [.NET 10 SDK](https://dotnet.microsoft.com/download) and [Ollama](https://ollama.com).
+You need: [.NET 10 SDK](https://dotnet.microsoft.com/download) and [Ollama](https://ollama.com).
 
 ```bash
 # one time, needs internet
 ollama pull qwen2.5:3b
+dotnet dev-certs https --trust
 
 # 1. start the API (https://localhost:7267)
 cd ConfyAI.API
@@ -92,37 +90,54 @@ cd ConfyAI.UI
 dotnet run
 ```
 
-Open https://localhost:7151. Make sure Ollama is running first.
+Open **https://localhost:7151**. Make sure Ollama is running first.
 
 After the first restore and model download, no internet is needed.
+
+## Testing
+
+The `samples/` folder has 5 fictional contracts (PDF and Word) with known problem clauses and "trap" clauses that use the same keywords but are fair. One of them is a fair contract that should get no flags. `samples/Confy_Test_Answer_Key.md` lists what each one should and should not flag.
+
+In my runs, Confy caught **20 of 21** problem clauses with **no false alarms**. It missed one termination clause ("with or without cause ... thirty (30) days' written notice"), which is listed in Known limitations.
 
 ## Disclosures (hackathon rules)
 
 ### Existing code before the hackathon
+
 A few days before the build window (about Oct 7), I made a small learning experiment to understand how local LLMs work: a single-clause `/analyze-text` endpoint and a clause splitter. It helped me prepare for this project, and I reused that project skeleton and clause splitter as my starting point. The 4-check design, code-decided probation, legal references, validation, file upload and the entire Blazor web app were built during the hackathon.
 
 ### Assets
-The Confy logo is an inline SVG drawn for this project and the UI design is my own. There are no stock images or external icon packs.
+
+- The Confy logo is an inline SVG drawn for this project and the UI design is my own. There are no stock images or external icon packs.
+- The demo video's motion graphics and background music were made with Claude (code-generated, no stock assets). The voice-over was generated with ElevenLabs (elevenlabs.io, voice: Bella).
+- The sample contracts in `samples/` are fictional and were generated with Claude for testing.
 
 ### AI tools used
-- **Claude** (Anthropic): used as a pair-programming assistant for architecture advice, code, prompt design for the local model, test cases, UI code and this README. I reviewed, ran and tested the code myself on my machine.
+
+- **Claude (Anthropic):** used as a pair-programming assistant for architecture advice, code, prompt design for the local model, test contracts, UI code, the demo video's motion graphics and music, and this README. I reviewed, ran and tested the code myself on my machine.
+- **ElevenLabs** (elevenlabs.io): text-to-speech for the demo video voice-over.
 
 ### Models
-- **Qwen2.5-3B-Instruct** (`qwen2.5:3b` on Ollama), by Alibaba Cloud. It runs locally. Its license is **`qwen-research`** (see the model card: https://huggingface.co/Qwen/Qwen2.5-3B-Instruct). Please read that license before any commercial use.
+
+- **Qwen2.5-3B-Instruct** (`qwen2.5:3b` on Ollama), by Alibaba Cloud. It runs locally. Its license is **qwen-research** (see the model card: https://huggingface.co/Qwen/Qwen2.5-3B-Instruct). Please read that license before any commercial use.
 
 ### APIs and cloud services
-None at runtime. Confy calls no cloud API. The only network traffic is between the browser, the Confy API and Ollama, all on `localhost`.
+
+None at runtime. Confy calls no cloud API. The only network traffic is between the browser, the Confy API and Ollama, all on localhost.
 
 ### Open-source libraries
+
 Carter, MediatR, FluentValidation, OllamaSharp, PdfPig, DocumentFormat.OpenXml and the .NET / Blazor framework. Each is used under its own license; see the respective package pages.
 
 ### Fonts
-The app uses system fonts by default. If Fraunces and DM Sans are bundled, they are licensed under the SIL Open Font License.
+
+The app does not download or bundle any fonts. It uses Fraunces and DM Sans if they are installed on your computer, and otherwise falls back to system fonts (Georgia, Segoe UI).
 
 ## Known limitations
 
 - Only **4 checks**. Confy says nothing about other problems in a contract.
-- Keyword routing can miss unusual wording, and a 3B model can miss or misread a clause (for example, a termination clause that says "either party may terminate with 30 days notice").
+- Keyword routing can miss unusual wording, and a 3B model can miss or misread a clause (for example, a termination clause that says "with or without cause" and also gives a notice period).
+- Each clause shows only its **first** issue. A clause with two problems shows one.
 - Confy flags clauses that *should be checked*. A flagged clause is not necessarily illegal, and an unflagged clause is not necessarily fine.
 - **Scanned PDFs (images) are not supported** (no OCR). Use a text PDF, a DOCX, or paste the text.
 - Text inside **DOCX tables** is not read.
@@ -131,7 +146,8 @@ The app uses system fonts by default. If Fraunces and DM Sans are bundled, they 
 
 ## Demo
 
-- Demo video: _add link_
+- Demo video (LinkedIn): https://www.linkedin.com/feed/update/urn:li:ugcPost:7514380462488768512/
+- Demo video (X): https://x.com/ArishavelleDev/status/2108617360726958355
 
 ## License
 
