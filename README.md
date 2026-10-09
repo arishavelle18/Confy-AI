@@ -135,4 +135,4 @@ The app uses system fonts by default. If Fraunces and DM Sans are bundled, they 
 
 ## License
 
-_Add your chosen license here._
+MIT License. See [LICENSE](LICENSE). The Qwen2.5-3B model is covered by its own license (see "Models" above).
