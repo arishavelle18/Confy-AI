@@ -1,3 +1,7 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="README.md" />
+  </Folder>
   <Project Path="ConfyAI.API/ConfyAI.API.csproj" />
+  <Project Path="ConfyAI.UI/ConfyAI.UI.csproj" Id="20b2bb39-d5ec-49a7-b3ae-9d5c66adbc1b" />
 </Solution>

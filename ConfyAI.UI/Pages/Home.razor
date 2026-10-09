@@ -1,0 +1,254 @@
+﻿@page "/"
+@using ConfyAI.UI.Models
+@inject HttpClient Http
+
+<PageTitle>Confy</PageTitle>
+
+<header class="top">
+    <div>
+        <div class="brand">
+            <span class="logo">
+                <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+                    <path d="M12 3 5 6v5c0 4.5 3 8.2 7 9.8 4-1.6 7-5.3 7-9.8V6l-7-3Z" fill="none" stroke="#e1f1ea" stroke-width="1.6" stroke-linejoin="round" />
+                    <path d="m9 12 2 2 4-4" fill="none" stroke="#e1f1ea" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </span>
+            <span class="name">Confy</span>
+        </div>
+        <p class="tagline">Read your employment contract before you sign it. Confy marks the clauses worth a second look.</p>
+    </div>
+    <div class="privacy">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <rect x="5" y="11" width="14" height="9" rx="2" fill="none" stroke="#14564d" stroke-width="1.8" />
+            <path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="#14564d" stroke-width="1.8" />
+        </svg>
+        <span>Runs on this computer. Your contract never leaves it.</span>
+    </div>
+</header>
+
+<div class="grid">
+    <section class="panel">
+        <div class="panel-head">
+            <h2>Your contract</h2>
+            <span class="badge">LOCAL REVIEW</span>
+        </div>
+
+        <div class="tabs">
+            <button class="tab @(mode == "paste" ? "on" : "")" @onclick='() => SetMode("paste")' disabled="@loading">Paste text</button>
+            <button class="tab @(mode == "file" ? "on" : "")" @onclick='() => SetMode("file")' disabled="@loading">Upload PDF or Word</button>
+        </div>
+
+        @if (mode == "paste")
+        {
+            <textarea class="paper" rows="12" placeholder="Paste the contract text here…"
+                      @bind="text" @bind:event="oninput" disabled="@loading"></textarea>
+        }
+        else
+        {
+            <label class="drop">
+                <InputFile OnChange="OnFilePicked" accept=".pdf,.docx" />
+                <strong>@(file is null ? "Choose a PDF or DOCX file" : file.Name)</strong>
+                <span>Up to 5 MB. Scanned pages (images) can't be read.</span>
+            </label>
+        }
+
+        <div class="actions">
+            <button class="btn primary" @onclick="Check" disabled="@(loading || !CanCheck)">
+                @(loading ? "Reading…" : "Check this contract")
+            </button>
+            @if (mode == "paste")
+            {
+                <button class="btn ghost" @onclick="UseSample" disabled="@loading">Use a sample</button>
+            }
+        </div>
+
+        <p class="note">A small AI model runs on your machine, so a long contract can take a minute or two.</p>
+
+        @if (error is not null)
+        {
+            <p class="error">@error</p>
+        }
+    </section>
+
+    <section class="panel results-panel">
+        <div class="panel-head">
+            <h2>What to look at</h2>
+            @if (loading)
+            {
+                <div class="progress"><div class="bar"></div></div>
+                <p class="hint">Confy is reading each clause on your computer…</p>
+            }
+        </div>
+
+        @if (loading)
+        {
+            <div class="progress"><div class="bar"></div></div>
+            <p class="hint">Confy is reading each clause on your computer…</p>
+        }
+        else if (result is null)
+        {
+            <div class="label">CHECKS CONFY RUNS</div>
+            <div class="check-row">
+                <span class="check-chip" style="--i:0">Probation over 6 months</span>
+                <span class="check-chip" style="--i:1">Termination without cause</span>
+                <span class="check-chip" style="--i:2">Charges and penalties</span>
+                <span class="check-chip" style="--i:3">Restrictions after you leave</span>
+            </div>
+            <p class="hint">Results will show up here. Confy checks these 4 things only. It is not legal advice.</p>
+        }
+        else
+        {
+            <div class="summary">
+                <span class="chip">@result.ClauseCount clauses read</span>
+                <span class="chip warn">@result.RiskyClauseCount to look at</span>
+                <span class="chip muted">@result.NeedsReviewCount not checked</span>
+            </div>
+
+            @if (result.NeedsReviewCount > 0)
+            {
+                <div class="banner">
+                    <span class="bang">!</span>
+                    @(result.NeedsReviewCount == 1 ? "1 clause" : $"{result.NeedsReviewCount} clauses") could not be checked. Read @(result.NeedsReviewCount == 1 ? "it" : "them") yourself.
+                </div>
+            }
+
+            @for (var i = 0; i < result.Clauses.Count; i++)
+            {
+                var c = result.Clauses[i];
+                <article class="flag @(c.NeedsReview ? "review" : "")" style="--i:@i">
+                    <p class="clause">
+                        <span class="cat-pill">@(c.NeedsReview ? "Could not check" : CategoryName(c.Category))</span>
+                        <mark>@c.RawClauseText</mark>
+                    </p>
+
+                    @if (c.NeedsReview)
+                    {
+                        <p class="why-text">Confy could not check this clause. Please read it yourself.</p>
+                    }
+                    else
+                    {
+                        <div class="rule"></div>
+                        <div class="label">WHY CHECK IT</div>
+                        <p class="why-text">@c.Explanation</p>
+                        @if (!string.IsNullOrWhiteSpace(c.LegalBasis))
+                        {
+                            <details>
+                                <summary>Law to check against</summary>
+                                <p>@c.LegalBasis</p>
+                            </details>
+                        }
+                    }
+                </article>
+            }
+
+            @if (result.Clauses.Count == 0)
+            {
+                <p class="hint">Nothing flagged by the 4 checks. This is not legal advice.</p>
+            }
+        }
+    </section>
+</div>
+
+<footer class="foot">Confy checks 4 things only. It is not legal advice.</footer>
+
+@code {
+    private string text = "";
+    private bool loading;
+    private string? error;
+    private AnalyzeContractResult? result;
+
+    private string mode = "paste";
+    private IBrowserFile? file;
+    private const long MaxBytes = 5 * 1024 * 1024;
+
+    private bool CanCheck => mode == "paste" ? !string.IsNullOrWhiteSpace(text) : file is not null;
+    private static string CategoryName(string? c) => c switch
+    {
+        "probationary_period" => "Probationary period",
+        "termination_without_cause" => "Termination without a stated cause",
+        "employee_charges" => "Charges or penalties on the employee",
+        "post_employment_restriction" => "Restriction after you leave",
+        _ => "Clause to check"
+    };
+
+    private void SetMode(string m)
+    {
+        mode = m;
+        error = null;
+        result = null;
+    }
+
+    private void OnFilePicked(InputFileChangeEventArgs e)
+    {
+        error = null;
+        result = null;
+        var f = e.File;
+        var ext = Path.GetExtension(f.Name).ToLowerInvariant();
+        if (ext is not (".pdf" or ".docx"))
+        {
+            file = null;
+            error = "Please choose a PDF or DOCX file.";
+            return;
+        }
+        if (f.Size > MaxBytes)
+        {
+            file = null;
+            error = "The file is larger than 5 MB.";
+            return;
+        }
+        file = f;
+    }
+
+    private void UseSample()
+    {
+        text = "1. The Employee shall serve a probationary period of 9 months.\n" +
+               "2. The Company may terminate this contract at its sole discretion at any time.\n" +
+               "3. The Company may deduct any damages from the Employee's final pay.\n" +
+               "4. For two years after resignation, the Employee shall not work for a similar business.";
+        result = null;
+        error = null;
+    }
+
+    private async Task Check()
+    {
+        error = null;
+        result = null;
+        loading = true;
+        try
+        {
+            HttpResponseMessage response;
+            if (mode == "file" && file is not null)
+            {
+                using var content = new MultipartFormDataContent();
+                content.Add(new StreamContent(file.OpenReadStream(MaxBytes)), "file", file.Name);
+                response = await Http.PostAsync("analyze-contract/file", content);
+            }
+            else
+            {
+                response = await Http.PostAsJsonAsync("analyze-contract", new { text });
+            }
+
+            if (response.IsSuccessStatusCode)
+            {
+                result = await response.Content.ReadFromJsonAsync<AnalyzeContractResult>();
+            }
+            else
+            {
+                var e = await response.Content.ReadFromJsonAsync<ApiError>();
+                error = e?.Error ?? "Something went wrong while checking the contract.";
+            }
+        }
+        catch (HttpRequestException)
+        {
+            error = "Cannot reach Confy's local engine. Make sure the API is running.";
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            error = "Unexpected reply from the local engine.";
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+}

@@ -33,6 +33,10 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
     cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
+builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
+    .WithOrigins("https://localhost:7151", "http://localhost:5248")
+    .AllowAnyHeader()
+    .AllowAnyMethod()));
 // register carter
 builder.Services.AddCarter();
 
@@ -45,5 +49,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors();
 app.MapCarter();
 app.Run();

@@ -33,6 +33,7 @@ internal class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : 
             ValidationException v => (StatusCodes.Status400BadRequest, v.Errors.First().ErrorMessage),
             HttpRequestException => (StatusCodes.Status503ServiceUnavailable,
                 "Cannot reach Ollama. Make sure it is running and the model is installed."),
+            BadHttpRequestException b => (b.StatusCode, "The request could not be read. Check the request body and Content-Type."),
             _ => (StatusCodes.Status500InternalServerError, "Something went wrong while checking the contract.")
         };
 
